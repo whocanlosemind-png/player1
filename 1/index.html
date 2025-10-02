@@ -48,8 +48,9 @@
     }
 
     .controls{display:flex;align-items:center;justify-content:center;margin:12px 0}
-    .play{width:72px;height:72px;border-radius:50%;background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.08));display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer}
+    .play{width:72px;height:72px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
+    /* 歌手与专辑介绍 */
     .meta{display:flex;align-items:flex-start;margin-top:20px}
     .avatar{width:64px;height:64px;border-radius:50%;overflow:hidden;margin-right:12px;border:2px solid rgba(255,255,255,0.05)}
     .avatar img{width:100%;height:100%;object-fit:cover}
@@ -62,6 +63,19 @@
     .album-thumb img{width:100%;height:100%;object-fit:cover}
     .album-info{color:var(--muted)}
     .album-info .year{font-weight:700;color:#fff;margin-top:18px;text-align:right}
+
+    /* 歌词区域 */
+    .lyrics{
+      margin-top:20px;
+      max-height:220px;
+      overflow-y:auto;
+      text-align:center;
+      padding:10px;
+      background:rgba(0,0,0,0.2);
+      border-radius:8px;
+    }
+    .lyrics p{margin:6px 0;color:#ddd;transition:color 0.3s}
+    .lyrics p.active{color:#56b36a;font-weight:bold}
 
     @media (max-width:420px){
       .cover{max-width:340px}
@@ -84,12 +98,18 @@
         </div>
       </div>
 
-      <!-- 新的可拖动进度条 -->
+      <!-- 可拖动进度条 -->
       <input type="range" id="progressBar" class="progress-bar" value="0" min="0" step="1">
 
+      <!-- 播放按钮 -->
       <div class="controls" aria-label="播放控制">
-        <div class="play" id="playBtn" title="播放">▶</div>
+        <div class="play" id="playBtn">
+          <img id="playIcon" src="https://file1-8ap.pages.dev/play.png" alt="播放" width="72">
+        </div>
       </div>
+
+      <!-- 歌词 -->
+      <div class="lyrics" id="lyricsBox"></div>
 
       <div class="meta" style="margin-top:22px">
         <div class="avatar">
@@ -127,10 +147,14 @@
   <script>
     const audio = document.getElementById("audio");
     const playBtn = document.getElementById("playBtn");
+    const playIcon = document.getElementById("playIcon");
     const progressBar = document.getElementById("progressBar");
+    const lyricsBox = document.getElementById("lyricsBox");
 
     let isPlaying = false;
+    let lrcData = [];
 
+    // 播放按钮
     playBtn.addEventListener("click", () => {
       if (isPlaying) {
         audio.pause();
@@ -141,22 +165,72 @@
 
     audio.addEventListener("play", () => {
       isPlaying = true;
-      playBtn.textContent = "⏸";
+      playIcon.src = "https://file1-8ap.pages.dev/pause.png";
     });
 
     audio.addEventListener("pause", () => {
       isPlaying = false;
-      playBtn.textContent = "▶";
+      playIcon.src = "https://file1-8ap.pages.dev/play.png";
     });
 
+    // 进度条
     audio.addEventListener("timeupdate", () => {
       progressBar.max = Math.floor(audio.duration);
       progressBar.value = Math.floor(audio.currentTime);
+      syncLyrics(audio.currentTime);
     });
 
     progressBar.addEventListener("input", () => {
       audio.currentTime = progressBar.value;
     });
+
+    // 载入歌词
+    fetch("https://file1-8ap.pages.dev/1.lrc")
+      .then(res => res.text())
+      .then(text => {
+        lrcData = parseLRC(text);
+        renderLyrics(lrcData);
+      });
+
+    function parseLRC(lrc) {
+      let lines = lrc.split("\n");
+      let result = [];
+      let timeExp = /\[(\d+):(\d+)(?:\.(\d+))?\]/;
+      for (let line of lines) {
+        let match = timeExp.exec(line);
+        if (match) {
+          let min = parseInt(match[1]);
+          let sec = parseInt(match[2]);
+          let time = min * 60 + sec;
+          let text = line.replace(timeExp, "").trim();
+          if (text) result.push({ time, text });
+        }
+      }
+      return result;
+    }
+
+    function renderLyrics(data) {
+      lyricsBox.innerHTML = "";
+      data.forEach((line, index) => {
+        let p = document.createElement("p");
+        p.textContent = line.text;
+        p.id = "line-" + index;
+        lyricsBox.appendChild(p);
+      });
+    }
+
+    function syncLyrics(currentTime) {
+      for (let i = 0; i < lrcData.length; i++) {
+        if (currentTime >= lrcData[i].time && (!lrcData[i+1] || currentTime < lrcData[i+1].time)) {
+          document.querySelectorAll(".lyrics p").forEach(p => p.classList.remove("active"));
+          let activeLine = document.getElementById("line-" + i);
+          if (activeLine) {
+            activeLine.classList.add("active");
+            activeLine.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+      }
+    }
   </script>
 </body>
 </html>

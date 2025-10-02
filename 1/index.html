@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>悔过书 - 黄明志</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: Arial, sans-serif; background: #5c4a3a; color: white; margin: 0; padding: 0; text-align: center;}
+.container { padding: 20px; }
+.cover img { width: 100%; max-width: 320px; border-radius: 10px; }
+.title { font-size: 20px; font-weight: bold; margin-top: 15px; }
+.subtitle { color: #0f0; margin: 8px 0; }
+.player { margin: 20px 0; }
+#playBtn img { width: 60px; cursor: pointer; }
+.progress { width: 100%; max-width: 400px; }
+.lyrics { margin-top: 20px; max-height: 200px; overflow-y: auto; text-align: left; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+.lyrics p { margin: 5px 0; transition: color 0.3s; }
+.lyrics p.active { color: #0f0; font-weight: bold; }
+.links { margin-top: 15px; }
+.links a { color: #fff; text-decoration: underline; margin: 0 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="cover">
+    <img src="https://file1-8ap.pages.dev/7688802.jpg" alt="封面">
+  </div>
+  <div class="title">悔过书 - 黄明志</div>
+  <div class="subtitle">所以千错万错都是我的错</div>
+
+  <div class="player">
+    <button id="playBtn"><img src="https://file1-8ap.pages.dev/play.png" id="playIcon"></button>
+    <input type="range" id="progressBar" class="progress" value="0" min="0" step="1">
+  </div>
+
+  <div class="lyrics" id="lyricsBox"></div>
+
+  <div class="links">
+    <a href="#" id="artistLink">歌手：黄明志</a>
+    <a href="#" id="albumLink">专辑：悔过书</a>
+  </div>
+</div>
+
+<audio id="audio" src="https://file1-8ap.pages.dev/07%20%E6%82%94%E8%BF%87%E4%B9%A6-new.mp3"></audio>
+
+<script>
+// 元素
+const audio = document.getElementById("audio");
+const playBtn = document.getElementById("playBtn");
+const playIcon = document.getElementById("playIcon");
+const progressBar = document.getElementById("progressBar");
+const lyricsBox = document.getElementById("lyricsBox");
+
+// 播放/暂停
+let isPlaying = false;
+playBtn.addEventListener("click", () => {
+  if (isPlaying) {
+    audio.pause();
+  } else {
+    audio.play();
+  }
+});
+audio.addEventListener("play", () => {
+  isPlaying = true;
+  playIcon.src = "https://file1-8ap.pages.dev/pause.png";
+});
+audio.addEventListener("pause", () => {
+  isPlaying = false;
+  playIcon.src = "https://file1-8ap.pages.dev/play.png";
+});
+
+// 进度条更新
+audio.addEventListener("timeupdate", () => {
+  progressBar.max = Math.floor(audio.duration);
+  progressBar.value = Math.floor(audio.currentTime);
+  syncLyrics(audio.currentTime);
+});
+progressBar.addEventListener("input", () => {
+  audio.currentTime = progressBar.value;
+});
+
+// 载入歌词
+let lrcData = [];
+fetch("unknown.lrc")
+  .then(res => res.text())
+  .then(text => {
+    lrcData = parseLRC(text);
+    renderLyrics(lrcData);
+  });
+
+function parseLRC(lrc) {
+  let lines = lrc.split("\n");
+  let result = [];
+  let timeExp = /\[(\d+):(\d+)\.(\d+)\]/;
+  for (let line of lines) {
+    let match = timeExp.exec(line);
+    if (match) {
+      let min = parseInt(match[1]);
+      let sec = parseInt(match[2]);
+      let time = min * 60 + sec;
+      let text = line.replace(timeExp, "").trim();
+      result.push({ time, text });
+    }
+  }
+  return result;
+}
+
+function renderLyrics(data) {
+  lyricsBox.innerHTML = "";
+  data.forEach((line, index) => {
+    let p = document.createElement("p");
+    p.textContent = line.text;
+    p.id = "line-" + index;
+    lyricsBox.appendChild(p);
+  });
+}
+
+function syncLyrics(currentTime) {
+  for (let i = 0; i < lrcData.length; i++) {
+    if (currentTime >= lrcData[i].time && (!lrcData[i+1] || currentTime < lrcData[i+1].time)) {
+      document.querySelectorAll(".lyrics p").forEach(p => p.classList.remove("active"));
+      let activeLine = document.getElementById("line-" + i);
+      if (activeLine) {
+        activeLine.classList.add("active");
+        activeLine.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }
+}
+</script>
+</body>
+</html>

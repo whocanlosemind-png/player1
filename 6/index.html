@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>黄明志 -- Datobeli Star Petpet 单曲 更多好音乐，尽在无线电音乐~</title>
+  <style>
+    :root{
+      --bg:#6e5239;
+      --muted:#c2b29a;
+      --accent:#56b36a;
+      --white: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Microsoft Yahei", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--white);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:18px 14px;
+    }
+    .container{max-width:520px;margin:0 auto}
+
+    .cover{
+      width:100%;
+      max-width:360px;
+      margin:0 auto 18px;
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 6px 18px rgba(0,0,0,0.35);
+    }
+    .cover img{display:block;width:100%;height:auto}
+
+    .title-row{margin-top:6px}
+    .title{
+      font-size:20px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .progress-bar{
+      width:100%;
+      margin:14px 0;
+    }
+
+    .controls{display:flex;align-items:center;justify-content:center;margin:12px 0}
+    .play{
+      width:52px;height:52px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      background:rgba(255,255,255,0.08);
+    }
+    .play img{width:32px;height:32px}
+
+    #lyrics{
+      height:200px;
+      overflow:hidden;
+      margin-top:16px;
+      text-align:center;
+      font-size:14px;
+      line-height:1.6;
+      color:var(--muted);
+      position:relative;
+    }
+    #lyrics p{
+      margin:6px 0;
+      transition:color 0.3s;
+    }
+    #lyrics p.active{
+      color:var(--white);
+      font-weight:700;
+      font-size:16px;
+    }
+
+    .meta{display:flex;align-items:flex-start;margin-top:20px}
+    .avatar{width:64px;height:64px;border-radius:50%;overflow:hidden;margin-right:12px}
+    .avatar img{width:100%;height:100%;object-fit:cover}
+    .meta .info h3{margin:0;font-size:15px}
+    .meta .info p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    .album-card{display:flex;align-items:center;gap:12px;margin-top:18px}
+    .album-thumb{width:84px;height:84px;border-radius:8px;overflow:hidden;background:#fff}
+    .album-thumb img{width:100%;height:100%;object-fit:cover}
+    .album-info{color:var(--muted)}
+    .album-info .year{font-weight:700;color:#fff;margin-top:18px;text-align:right}
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <div class="cover">
+      <img src="https://file1-8ap.pages.dev/1727283.png" alt="专辑封面">
+    </div>
+
+    <div>
+      <div class="title-row">
+        <div class="title">黄明志 - Datobeli Star Petpet
+          <span style="font-size:12px;background:rgba(255,255,255,0.08);padding:3px 6px;border-radius:8px;margin-left:8px">VIP</span>
+        </div>
+      </div>
+
+      <input type="range" id="progressBar" class="progress-bar" value="0" min="0" step="1">
+
+      <div class="controls">
+        <div class="play" id="playBtn">
+          <img id="playIcon" src="https://file1-8ap.pages.dev/play.png" alt="play">
+        </div>
+      </div>
+
+      <div id="lyrics"></div>
+
+      <div class="meta">
+        <div class="avatar">
+          <img src="https://file1-8ap.pages.dev/namewee.jpg" alt="歌手头像">
+        </div>
+        <div class="info">
+          <h3>歌手</h3>
+          <p>黄明志</p>
+        </div>
+      </div>
+
+      <div class="album-card">
+        <div class="album-thumb"><img src="https://file1-8ap.pages.dev/1727283.png" alt="专辑封面"></div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-weight:700">小明与小志</div>
+              <div class="album-info">黄明志</div>
+            </div>
+            <div class="album-info" style="text-align:right">
+              <div class="year">2024</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">华语 · 11首</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p style="color:var(--muted);font-size:12px;margin-top:26px">Built by WalkMan in 2025</p>
+    </div>
+  </div>
+
+  <audio id="audio" src="https://file1-8ap.pages.dev/04%20Datobeli%20Star%20Petpet-new.mp3"></audio>
+
+  <script>
+    const audio = document.getElementById("audio");
+    const playBtn = document.getElementById("playBtn");
+    const playIcon = document.getElementById("playIcon");
+    const progressBar = document.getElementById("progressBar");
+    const lyricsContainer = document.getElementById("lyrics");
+
+    let isPlaying = false;
+    let lyrics = [];
+
+    playBtn.addEventListener("click", () => {
+      if (isPlaying) {
+        audio.pause();
+      } else {
+        audio.play();
+      }
+    });
+
+    audio.addEventListener("play", () => {
+      isPlaying = true;
+      playIcon.src = "https://file1-8ap.pages.dev/pause.png";
+    });
+
+    audio.addEventListener("pause", () => {
+      isPlaying = false;
+      playIcon.src = "https://file1-8ap.pages.dev/play.png";
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      progressBar.max = Math.floor(audio.duration);
+      progressBar.value = Math.floor(audio.currentTime);
+
+      for (let i = 0; i < lyrics.length; i++) {
+        if (audio.currentTime >= lyrics[i].time &&
+            (i === lyrics.length - 1 || audio.currentTime < lyrics[i+1].time)) {
+          const active = lyricsContainer.querySelector(".active");
+          if (active) active.classList.remove("active");
+          const currentLine = lyricsContainer.children[i];
+          if (currentLine) {
+            currentLine.classList.add("active");
+            lyricsContainer.scrollTop = currentLine.offsetTop - lyricsContainer.clientHeight/2 + currentLine.clientHeight/2;
+          }
+          break;
+        }
+      }
+    });
+
+    progressBar.addEventListener("input", () => {
+      audio.currentTime = progressBar.value;
+    });
+
+    fetch("https://file1-8ap.pages.dev/6.lrc")
+      .then(res => res.text())
+      .then(text => {
+        const lines = text.split("\n");
+        lyrics = [];
+        lyricsContainer.innerHTML = "";
+        const timeReg = /\[(\d+):(\d+(?:\.\d+)?)\]/;
+        lines.forEach(line => {
+          const match = timeReg.exec(line);
+          if (match) {
+            const min = parseInt(match[1]);
+            const sec = parseFloat(match[2]);
+            const time = min * 60 + sec;
+            const content = line.replace(timeReg, "").trim();
+            if (content) {
+              lyrics.push({time, content});
+              const p = document.createElement("p");
+              p.textContent = content;
+              lyricsContainer.appendChild(p);
+            }
+          }
+        });
+      });
+  </script>
+</body>
+</html>
